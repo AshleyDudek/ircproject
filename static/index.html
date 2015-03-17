@@ -111,6 +111,7 @@ if(showhide == "show"){
         
         $scope.processSearch = function processSearch() {
           console.log("Trying to search");
+          $scope.searchfinds = [];
           socket.emit('search', $scope.searchTerm);
         };
 
