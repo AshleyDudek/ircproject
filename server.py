@@ -84,13 +84,14 @@ def on_search(term):
     cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     print 'find '  + term
     thing = term
-    query = "SELECT * FROM messages WHERE text LIKE %s OR userperson LIKE %s;"
+    query = "SELECT * FROM messages WHERE text = %s OR userperson = %s;"
     cur.execute(query, (term, thing))
     finds = cur.fetchall()
     if not finds:
         print "no finds"
     else:
         for find in finds:
+            print find['text'] + ' ' + find['userperson']
             thing = {'text':find['text'], 'name':find['userperson']}
             emit('search', thing, broadcast=True)
     
