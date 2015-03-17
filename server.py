@@ -83,9 +83,9 @@ def on_search(term):
     db = connectToDB()
     cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     print 'find '  + term
-    thing = term
+    thing = '%' + term + '%'
     query = "SELECT * FROM messages WHERE text = %s OR userperson = %s;"
-    cur.execute(query, (term, thing))
+    cur.execute(query, (thing, thing))
     finds = cur.fetchall()
     if not finds:
         print "no finds"
