@@ -4,6 +4,7 @@
     <title>Chat Example</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/ugh.css">
     <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
     <style type="text/css">
       body {
@@ -17,7 +18,7 @@ margin-right: 70%;
 margin-top: 70px; 
 padding-top: 10px; 
 width: 20%; 
-height: 170px; 
+height: 360px; 
 position: absolute; 
 background: #FFFFFF; 
 border: solid #909090 2px; 
@@ -41,25 +42,57 @@ if(showhide == "show"){
 
         //var socket = io.connect();
 
-        $scope.messages = [];
+        $scope.messages1 = [];
+        $scope.messages2 = [];
+        $scope.messages3 = [];
+        $scope.room1 = '';
+        $scope.room2 = '';
+        $scope.room3 = '';
+        $scope.roomid1 = 0;
+        $scope.roomid2 = 0;
+        $scope.roomid3 = 0;
         $scope.searchfinds = [];
         $scope.roster = [];
         $scope.name = '';
-        $scope.text = '';
+        $scope.passwordReg = '';
+        $scope.nameReg = '';
+        $scope.text1 = '';
+        $scope.text2 = '';
+        $scope.text3 = '';
         $scope.searchTerm = '';
         $scope.loginworks = false;
+        $scope.regmes = '';
+        $scope.subchat = '';
+        $scope.subpass = '';
 
         socket.on('connect', function () {
           console.log('connected');
-          $scope.messages = [];
+          document.getElementById('chat1able').style.visibility="hidden";
+          document.getElementById('regreturn').style.visibility="hidden";
+          document.getElementById('chat2able').style.visibility="hidden";
+          document.getElementById('chat3able').style.visibility="hidden";
+          $scope.messages1 = [];
+          $scope.messages2 = [];
+          $scope.messages3 = [];
           $scope.searchfinds = [];
           $scope.setName();
         });
 
-        socket.on('message', function (msg) {
-          
+        socket.on('message1', function (msg) {
           console.log(msg);
-          $scope.messages.push(msg);
+          $scope.messages1.push(msg);
+          $scope.$apply();
+        });
+        
+        socket.on('message2', function (msg) {
+          console.log(msg);
+          $scope.messages2.push(msg);
+          $scope.$apply();
+        });
+        
+        socket.on('message3', function (msg) {
+          console.log(msg);
+          $scope.messages3.push(msg);
           $scope.$apply();
         });
         
@@ -73,12 +106,46 @@ if(showhide == "show"){
         socket.on('login', function (intlogin) {
           if (intlogin == 1) { 
             login('show')
-            document.getElementById('chatAble').style.visibility="hidden";
+            //document.getElementById('chatAble').style.visibility="hidden";
           }
           if (intlogin == 0) { 
             login('hide');
-            document.getElementById('chatAble').style.visibility="visible";
+            document.getElementById('regreturn').style.visibility="hidden";
+            //document.getElementById('chatAble').style.visibility="visible";
           }
+        });
+        
+        socket.on('register', function (regmessage) {
+          $scope.regmes = regmessage;
+          document.getElementById('regreturn').style.visibility="visible";
+        });
+        
+        
+        socket.on('enterroom1', function (room) {
+          document.getElementById('chat1NOTable').style.visibility="hidden";
+          $scope.room1 = room.name;
+          $scope.roomid1 = room['id'];
+          socket.emit('load1', room);
+          document.getElementById('chat1able').style.visibility="visible";
+          
+        });
+        
+        socket.on('enterroom2', function (room) {
+          document.getElementById('chat2NOTable').style.visibility="hidden";
+          $scope.room2 = room['name'];
+          $scope.roomid2 = room['id'];
+          socket.emit('load2', room);
+          document.getElementById('chat2able').style.visibility="visible";
+          
+        });
+        
+        socket.on('enterroom3', function (room) {
+          document.getElementById('chat3NOTable').style.visibility="hidden";
+          $scope.room3 = room['name'];
+          $scope.roomid3 = room['id'];
+          socket.emit('load3', room);
+          document.getElementById('chat3able').style.visibility="visible";
+          
         });
 
         socket.on('roster', function (names) {
@@ -87,10 +154,22 @@ if(showhide == "show"){
           $scope.$apply();
         });
 
-        $scope.send = function send() {
+        $scope.send1 = function send1() {
           console.log('Sending message:', $scope.text);
-          socket.emit('message', $scope.text);
-          $scope.text = '';
+          socket.emit('message1', $scope.text1);
+          $scope.text1 = '';
+        };
+        
+        $scope.send2 = function send2() {
+          console.log('Sending message:', $scope.text);
+          socket.emit('message2', $scope.text2);
+          $scope.text2 = '';
+        };
+        
+        $scope.send3 = function send3() {
+          console.log('Sending message:', $scope.text3);
+          socket.emit('message3', $scope.text3);
+          $scope.text3 = '';
         };
 
         $scope.setName = function setName() {
@@ -113,6 +192,33 @@ if(showhide == "show"){
           console.log("Trying to search");
           $scope.searchfinds = [];
           socket.emit('search', $scope.searchTerm);
+        };
+        
+        $scope.processChat1 = function processChat1() {
+          console.log("Trying to enter chatroom 1");
+          socket.emit('enterroom1', $scope.chat1name);
+        };
+        
+        $scope.processChat2 = function processChat2() {
+          console.log("Trying to enter chatroom 2");
+          socket.emit('enterroom2', $scope.chat2name);
+        };
+        
+        $scope.processChat3 = function processChat3() {
+          console.log("Trying to enter chatroom 3");
+          socket.emit('enterroom3', $scope.chat3name);
+        };
+        
+        $scope.register = function register() {
+          console.log("Trying to register");
+          //login('hide');
+          socket.emit('register', {'username': $scope.nameReg, 'password':$scope.passwordReg});
+        };
+        
+        $scope.roomsub = function roomsub() {
+          console.log("Trying to subscribe");
+          //login('hide');
+          socket.emit('subto', {'room': $scope.subchat, 'password':$scope.subpass});
         };
 
 
@@ -137,8 +243,15 @@ if(showhide == "show"){
 <center><input type="text"  ng-model="name2" ng-change="setName2()" placeholder="Username" size="14" /></center>
 <center>Password:</center>
 <center><input  ng-model="password" type="password" size="14" /></center>
-<center><input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!password"></center>
-
+<center><input type="submit" class="span1 btn btn-primary" value="Login" ng-disabled="!password"></center>
+</form>
+<form ng-submit="register()">
+<center>Username:</center>
+<center><input type="text"  ng-model="nameReg" placeholder="Username" size="14" /></center>
+<center>Password:</center>
+<center><input  ng-model="passwordReg" type="password" size="14" /></center>
+<center><input type="submit" class="span1 btn btn-primary" width=20 value="Register" ng-disabled="!passwordReg"></center>
+<div id="regreturn"><center><p ng-bind="regmes"></p></center></div>
 </form>
 <br />
 
@@ -159,7 +272,7 @@ if(showhide == "show"){
       <div class="navbar navbar-fixed-top navbar-inverse">
         <div class="navbar-inner">
           <div class="pull-right">
-            <a href="https://c9.io" class="brand">Cloud9 IDE</a>
+            <form ng-submit="roomsub()">Sub to room:<input type="text" ng-model="subchat" placeholder="Chatroom name" size="8" /> Room password:<input type="password" ng-model="subpass" size="8" /> <input type="submit" class="subbut" value="Subscribe" ng-disabled="!subpass"></form>
           </div>
         </div>
       </div>
@@ -174,7 +287,9 @@ if(showhide == "show"){
             </li>
           </ul>
           
+          
         </div>
+        
         
         <!--<div>
           <form ng-submit="processSearch()">
@@ -184,7 +299,7 @@ if(showhide == "show"){
         </div>-->
         
         <div class="span9">
-          <table class="table table-striped table-bordered">
+          <!--<table class="table table-striped table-bordered">
             <thead>
               <tr>
                 <th class="span2">Name</th>
@@ -206,8 +321,109 @@ if(showhide == "show"){
                 <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!text">
               </div>
             </form>
+          </div>-->
+          
+          <div id="chat1NOTable">
+            <div>
+              <form ng-submit="processChat1()">
+                Chatroom Name: <input type="text" ng-model="chat1name" placeholder="Chatroom name" size="14" />
+                <input type="submit" class="span1 btn btn-primary" value="Enter" ng-disabled="!chat1name">
+              </form>
+            </div>
+          </div>
+          <div id="chat1able" class="row controls">
+            <table class="table table-striped table-bordered">
+            <thead>
+              <tr><th colspan=2 ng-bind="chat1name"></th></tr>
+              <tr>
+                <th class="span2">Name</th>
+                <th class="span7">Text</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="msg in messages1">
+                <td class="span2" ng-bind="msg.name"></td>
+                <td class="span7" ng-bind="msg.text"></td>
+              </tr>
+            </tbody>
+          </table>
+          <form ng-submit="send1()">
+              <div class="span2" ><input type="text" class="input-block-level" ng-model="name" readonly="readonly" placeholder="Your Name"></div>
+              <div class="input-append span7">
+                <input type="text" class="span6" ng-model="text1" placeholder="Message">
+                <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!text1">
+              </div>
+            </form>
           </div>
           
+          <div id="chat2NOTable">
+            <div>
+              <form ng-submit="processChat2()">
+                Chatroom Name: <input type="text" ng-model="chat2name" placeholder="Chatroom name" size="14" />
+                <input type="submit" class="span1 btn btn-primary" value="Enter" ng-disabled="!chat2name">
+              </form>
+            </div>
+          </div>
+          <div id="chat2able" class="row controls">
+            
+            <table class="table table-striped table-bordered">
+            <thead>
+              <tr><th colspan=2 ng-bind="chat2name"></th></tr>
+              <tr>
+                <th class="span2">Name</th>
+                <th class="span7">Text</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="msg in messages2">
+                <td class="span2" ng-bind="msg.name"></td>
+                <td class="span7" ng-bind="msg.text"></td>
+              </tr>
+            </tbody>
+          </table>
+          <form ng-submit="send2()">
+              <div class="span2" ><input type="text" class="input-block-level" ng-model="name" readonly="readonly" placeholder="Your Name"></div>
+              <div class="input-append span7">
+                <input type="text" class="span6" ng-model="text2" placeholder="Message">
+                <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!text2">
+              </div>
+            </form>
+          </div>
+          
+          <div id="chat3NOTable">
+            <div>
+              <form ng-submit="processChat3()">
+                Chatroom Name: <input type="text" ng-model="chat3name" placeholder="Chatroom name" size="14" />
+                <input type="submit" class="span1 btn btn-primary" value="Enter" ng-disabled="!chat3name">
+              </form>
+            </div>
+          </div>
+          <div id="chat3able" class="row controls">
+            <table class="table table-striped table-bordered">
+            <thead>
+              <tr><th colspan=2 ng-bind="chat3name"></th></tr>
+              <tr>
+                <th class="span2">Name</th>
+                <th class="span7">Text</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="msg in messages3">
+                <td class="span2" ng-bind="msg.name"></td>
+                <td class="span7" ng-bind="msg.text"></td>
+              </tr>
+            </tbody>
+          </table>
+          <form ng-submit="send3()">
+              <div class="span2" ><input type="text" class="input-block-level" ng-model="name" readonly="readonly" placeholder="Your Name"></div>
+              <div class="input-append span7">
+                <input type="text" class="span6" ng-model="text3" placeholder="Message">
+                <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!text3">
+              </div>
+            </form>
+          </div>
+          
+          <br>
           <div>
             <form ng-submit="processSearch()">
               <input type="text"  ng-model="searchTerm" placeholder="Search..." size="14" />
